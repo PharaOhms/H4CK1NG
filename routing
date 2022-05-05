@@ -1,0 +1,25 @@
+find the secret server 
+
+Como puedes ver, estás conectado vía VPN a la red 10.175.34.0/24 pero también hay otras tres redes. En cada red, hay un servidor web (puede acceder a él navegando por su dirección IP con su navegador web) con las siguientes direcciones IP:
+172.16.88.81, 192.168.241.12 y 192.168.222.199.
+
+PARROT$ > route
+route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         liveboxfibra    0.0.0.0         UG    600    0        0 wlan0
+10.175.34.0     0.0.0.0         255.255.255.0   U     0      0        0 tap0
+172.16.88.0     10.175.34.1     255.255.255.0   UG    0      0        0 tap0
+192.168.1.0     0.0.0.0         255.255.255.0   U     600    0        0 wlan0
+192.168.241.0   10.175.34.1     255.255.255.0   UG    0      0        0 tap0
+
+192.168.222.199 
+No podemos navegar por el servidor web porque no tenemos una ruta para esa red.
+Agregar una ruta manualmente
+En este momento, no tenemos ninguna ruta configurada para llegar al "Servidor secreto". ¡Veamos cómo agregar la ruta correcta en nuestro sistema!
+Simplemente podemos hacer esto con el siguiente comando:
+
+sudo ip route add 192.168.222.0/24 via 10.175.34.1
+
+PARROT$ route
+192.168.222.0   10.175.34.1     255.255.255.0   UG    0      0        0 tap0  > OK
