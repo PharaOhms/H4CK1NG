@@ -1,0 +1,6 @@
+gobuster dir -u http://172.16.64.140/project -w /usr/share/wordlists/dirb/big.txt -U admin -P admin -t 50
+-u = url
+-w = wordlist
+-U = user
+-P = password
+-t threads
