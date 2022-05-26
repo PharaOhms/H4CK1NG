@@ -1,0 +1,29 @@
+[+]DIRECTORY[+]
+wfuzz -c -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.10.11.108/FUZZ  --hc 404 -L
+Cheat Sheet :
+
+FUZZ Object to bruteforce /or FUZ2Z second object.
+-c color format
+-w wordlist
+-u url 
+--hc 404 hide code status
+-L follow redirect
+
+
+[+]SUBDOMAIN[+]
+wfuzz -c -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-20000.txt --hc 400,404,403 -H "Host: FUZZ.example.com" -u http://example.com -t 100
+Cheat Sheet :
+
+-H Header 
+-t Threads 
+--hh hide chars
+--hl hide lines 
+--hw hide words 
+
+
+[+]LOGIN[+]
+wfuzz -c -w users.txt --hs "Login name" -d "name=FUZZ&password=FUZZ&autologin=1&enter=Sign+in" http://zipper.htb/login.php
+Cheat Sheet :
+
+--hs/ss hide/show  responses with the specified regex within the content
+-d post data
