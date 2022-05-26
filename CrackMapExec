@@ -1,0 +1,3 @@
+Protocols exploit >> smb, winrm, ssh, http o mssql.
+
+crackmapexec smb 10.10.11.108 -u svc-printer -p '1edFg43012!!' --shares
