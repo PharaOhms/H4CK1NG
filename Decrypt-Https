@@ -1,0 +1,7 @@
+export SSLKEYLOGFILE="/$HOME/ssl-key.log"
+printenv // echo $SSLKEYLOGFILE
+tcdump -w capture
+$wireshark -o 'tls.keylog_file:.ssl-key.log' -r capture
+$tshark -o 'tls.keylog_file:.ssl-key.log' -r capture
+Edicion; Preferencias; Protocols; TLS.
+WireShark Filters : tls, http2.
