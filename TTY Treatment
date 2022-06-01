@@ -8,3 +8,6 @@ stty raw -echo; fg
   
 export TERM=xterm
 export SHELL=bash
+
+stty cols 186 
+stty rows 42
